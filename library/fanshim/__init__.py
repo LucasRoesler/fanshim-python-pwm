@@ -1,16 +1,19 @@
-import RPi.GPIO as GPIO
 import time
+
+import RPi.GPIO as GPIO
+
 try:
     from plasma import legacy as plasma
 except ImportError:
     import plasma
+
 import atexit
 from threading import Thread
 
-__version__ = '0.0.4'
+__version__ = "0.0.4"
 
 
-class FanShim():
+class FanShim:
     def __init__(self, pin_fancontrol=18, pin_button=17, button_poll_delay=0.05):
         """FAN Shim.
 
@@ -28,16 +31,15 @@ class FanShim():
         self._t_poll = None
 
         atexit.register(self._cleanup)
-8
-        #Original Versiom
-        #GPIO.setwarnings(False)
-        #GPIO.setmode(GPIO.BCM)
-        #GPIO.setup(self._pin_fancontrol, GPIO.OUT)
-        #GPIO.setup(self._pin_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        
+        # Original Versiom
+        # GPIO.setwarnings(False)
+        # GPIO.setmode(GPIO.BCM)
+        # GPIO.setup(self._pin_fancontrol, GPIO.OUT)
+        # GPIO.setup(self._pin_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
         print("hollo")
 
-        #PWM Version
+        # PWM Version
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
 
@@ -48,7 +50,7 @@ class FanShim():
 
         GPIO.setup(self._pin_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self._pin_fancontrol, GPIO.OUT)
-        self.pwm_out = GPIO.PWM(self._pin_fancontrol,1)
+        self.pwm_out = GPIO.PWM(self._pin_fancontrol, 1)
         self.pwm_out.start(0)
         self.pwm_out.ChangeFrequency(self.pwm_freq)
         self.pwm_out.ChangeDutyCycle(self.pwm_speed)
@@ -72,6 +74,7 @@ class FanShim():
 
     def on_press(self, handler=None):
         """Attach function to button press event."""
+
         def attach_handler(handler):
             self._button_press_handler = handler
             self.start_polling()
@@ -83,6 +86,7 @@ class FanShim():
 
     def on_release(self, handler=None):
         """Attach function to button release event."""
+
         def attach_handler(handler):
             self._button_release_handler = handler
             self.start_polling()
@@ -94,6 +98,7 @@ class FanShim():
 
     def on_hold(self, handler=None):
         """Attach function to button hold event."""
+
         def attach_handler(handler):
             self._button_hold_handler = handler
             self.start_polling()
@@ -113,18 +118,17 @@ class FanShim():
 
     def get_fan(self):
         """Get current fan state."""
-        #Original Version
-        #return GPIO.input(self._pin_fancontrol)
-        #PWM Version
+        # Original Version
+        # return GPIO.input(self._pin_fancontrol)
+        # PWM Version
         return self.fan_state
 
     def toggle_fan(self):
         """Toggle fan state."""
-        #Original Version
-        #return self.set_fan(False if self.get_fan() else True)
-        #PWM Version
+        # Original Version
+        # return self.set_fan(False if self.get_fan() else True)
+        # PWM Version
         return self.set_fan(False if self.get_fan() else True)
-        
 
     def set_fan(self, fan_state):
         """Set the fan on/off.
@@ -133,8 +137,8 @@ class FanShim():
 
         """
         # Original Version
-        #GPIO.output(self._pin_fancontrol, True if fan_state else False)
-        #return True if fan_state else False
+        # GPIO.output(self._pin_fancontrol, True if fan_state else False)
+        # return True if fan_state else False
         # PWM Version
         if fan_state:
             self.pwm_out.ChangeDutyCycle(self.pwm_speed)
@@ -175,10 +179,15 @@ class FanShim():
 
             if last < current:
                 if callable(self._button_release_handler):
-                    Thread(target=self._button_release_handler, args=(self._hold_fired,)).start()
+                    Thread(
+                        target=self._button_release_handler, args=(self._hold_fired,)
+                    ).start()
 
             if current == 0:
-                if not self._hold_fired and (time.time() - self._t_pressed) > self._button_hold_time:
+                if (
+                    not self._hold_fired
+                    and (time.time() - self._t_pressed) > self._button_hold_time
+                ):
                     if callable(self._button_hold_handler):
                         Thread(target=self._button_hold_handler).start()
                     self._hold_fired = True
