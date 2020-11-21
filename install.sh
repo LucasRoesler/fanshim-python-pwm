@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CONFIG=/boot/config.txt
-DATESTAMP=`date "+%Y-%M-%d-%H-%M-%S"`
+DATESTAMP=$(date "+%Y-%M-%d-%H-%M-%S")
 CONFIG_BACKUP=false
 
 if [ $? -ne 0 ]; then
@@ -39,7 +39,7 @@ function apt_pkg_install {
 
 apt_pkg_install python-configparser
 
-CONFIG_VARS=`python - <<EOF
+CONFIG_VARS=$(python - <<EOF
 from configparser import ConfigParser
 c = ConfigParser()
 c.read('library/setup.cfg')
@@ -57,44 +57,22 @@ LIBRARY_VERSION="{version}"
 """.format(**c['metadata']))
 print("""
 PY3_DEPS={py3deps}
-PY2_DEPS={py2deps}
 SETUP_CMDS={commands}
 CONFIG_TXT={configtxt}
 """.format(**p))
-EOF`
+EOF
+)
 
 eval $CONFIG_VARS
 
 printf "$LIBRARY_NAME $LIBRARY_VERSION Python Library: Installer\n\n"
 
-if [ $(id -u) -ne 0 ]; then
+if [ "$(id -u)" -ne 0 ]; then
 	printf "Script must be run as root. Try 'sudo ./install.sh'\n"
 	exit 1
 fi
 
-cd library
-
-printf "Installing for Python 2..\n"
-
-printf "Checking for rpi.gpio>=0.7.0 (for Pi 4 support)\n"
-python - <<EOF
-import RPi.GPIO as GPIO
-from pkg_resources import parse_version
-import sys
-if parse_version(GPIO.VERSION) < parse_version('0.7.0'):
-    sys.exit(1)
-EOF
-
-if [ $? -ne 0 ]; then
-	printf "Installing rpi.gpio\n"
-	pip install --upgrade "rpi.gpio>=0.7.0"
-else
-	printf "rpi.gpio >= 0.7.0 already installed\n"
-fi
-
-apt_pkg_install "${PY2_DEPS[@]}"
-python setup.py install
-
+cd library || exit 1
 
 
 if [ -f "/usr/bin/python3" ]; then
