@@ -1,9 +1,8 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-ON_THRESHOLD=65
-OFF_THRESHOLD=55
-HYSTERESIS=5
+ON_THRESHOLD=55
+OFF_THRESHOLD=50
 DELAY=2
 PREEMPT="no"
 POSITIONAL_ARGS=()
@@ -69,13 +68,15 @@ while [[ $# -gt 0 ]]; do
 		shift
 		shift
 		;;
-	-t|--threshold)
-		OLD_THRESHOLD="error"
+	--speed)
+		SPEED="$2"
+		SPEED_SET=true
 		shift
 		shift
 		;;
-	-h|--hysteresis)
-		OLD_HYSTERESIS="error"
+	--freq)
+		FREQ="$2"
+		FREQ_SET=true
 		shift
 		shift
 		;;
@@ -148,6 +149,14 @@ fi
 
 if [ "$NOBUTTON" == "yes" ]; then
 	EXTRA_ARGS+=' --nobutton'
+fi
+
+if [ $SPEED_SET ]; then
+	EXTRA_ARGS+=" --speed=$SPEED"
+fi
+
+if [ $FREQ_SET ]; then
+	EXTRA_ARGS+=" --freq=$FREQ"
 fi
 
 if ! [ "$1" == "" ]; then
