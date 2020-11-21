@@ -10,58 +10,16 @@ import psutil
 from fanshim import FanShim
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--threshold",
-    type=float,
-    default=-1,
-    help="Temperature threshold in degrees C to enable fan",
-)
-parser.add_argument(
-    "--hysteresis",
-    type=float,
-    default=-1,
-    help="Distance from threshold before fan is disabled",
-)
-
-parser.add_argument(
-    "--off-threshold",
-    type=float,
-    default=55.0,
-    help="Temperature threshold in degrees C to enable fan",
-)
-parser.add_argument(
-    "--on-threshold",
-    type=float,
-    default=65.0,
-    help="Temperature threshold in degrees C to disable fan",
-)
-parser.add_argument(
-    "--delay",
-    type=float,
-    default=2.0,
-    help="Delay, in seconds, between temperature readings",
-)
-parser.add_argument(
-    "--preempt",
-    action="store_true",
-    default=False,
-    help="Monitor CPU frequency and activate cooling premptively",
-)
-parser.add_argument(
-    "--verbose",
-    action="store_true",
-    default=False,
-    help="Output temp and fan status messages",
-)
-parser.add_argument(
-    "--nobutton", action="store_true", default=False, help="Disable button input"
-)
-parser.add_argument(
-    "--noled", action="store_true", default=False, help="Disable LED control"
-)
-parser.add_argument(
-    "--brightness", type=float, default=255.0, help="LED brightness, from 0 to 255"
-)
+parser.add_argument("--off-threshold", type=float, default=55.0, help="Temperature threshold in degrees C to enable fan")
+parser.add_argument("--on-threshold", type=float, default=65.0, help="Temperature threshold in degrees C to disable fan")
+parser.add_argument("--delay", type=float, default=2.0, help="Delay, in seconds, between temperature readings")
+parser.add_argument("--preempt", action="store_true", default=False, help="Monitor CPU frequency and activate cooling premptively")
+parser.add_argument("--verbose", action="store_true", default=False, help="Output temp and fan status messages")
+parser.add_argument("--nobutton", action="store_true", default=False, help="Disable button input")
+parser.add_argument("--noled", action="store_true", default=False, help="Disable LED control")
+parser.add_argument("--brightness", type=float, default=255.0, help="LED brightness, from 0 to 255")
+parser.add_argument("--freq", type=int, default=2, help="PMW frequency")
+parser.add_argument("--speed", type=int, default=80, help="PMW fan speed % 0--100")
 
 args = parser.parse_args()
 
@@ -119,19 +77,11 @@ def set_automatic(status):
     last_change = 0
 
 
-if args.threshold > -1 or args.hysteresis > -1:
-    print(
-        """
-The --threshold and --hysteresis parameters have been deprecated.
-Use --on-threshold and --off-threshold instead!
-"""
-    )
-    sys.exit(1)
-
-
 fanshim = FanShim()
 fanshim.set_hold_time(1.0)
 fanshim.set_fan(False)
+fanshim.pwm_freq = args.freq
+fanshim.pwm_speed = args.speed
 armed = True
 enabled = False
 led_busy = Lock()
@@ -146,7 +96,7 @@ if args.noled:
     led_busy.release()
 
 t = get_cpu_temp()
-if t >= args.threshold:
+if t >= args.off_threshold:
     last_change = get_cpu_temp()
     set_fan(True)
 
