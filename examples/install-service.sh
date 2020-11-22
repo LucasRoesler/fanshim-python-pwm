@@ -151,10 +151,12 @@ if [ "$NOBUTTON" == "yes" ]; then
 	EXTRA_ARGS+=' --nobutton'
 fi
 
+SPEED=${SPEED:-'80'}
 if [ $SPEED_SET ]; then
 	EXTRA_ARGS+=" --speed=$SPEED"
 fi
 
+FREQ=${FREQ:-'4'}
 if [ $FREQ_SET ]; then
 	EXTRA_ARGS+=" --freq=$FREQ"
 fi
@@ -187,6 +189,8 @@ Preempt:        $PREEMPT
 Disable LED:    $NOLED
 Disable Button: $NOBUTTON
 Brightness:     $BRIGHTNESS
+Speed:          $SPEED
+Freq:           $FREQ
 
 To change these options, run:
 $USAGE
